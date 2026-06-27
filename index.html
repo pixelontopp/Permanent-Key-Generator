@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Hub</title>
+
+<style>
+/* Modern Smooth Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseBorder {
+    0% { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f622; }
+    50% { border-color: #22c55e; box-shadow: 0 0 20px #22c55e44; }
+    100% { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f622; }
+}
+
+@keyframes successPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, sans-serif;
+}
+
+body{
+    background:#08111f;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    overflow: hidden;
+}
+
+.card{
+    width:360px;
+    background:#13233f;
+    border-radius:18px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 10px 40px #00000055, 0 0 30px #3b82f655;
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+h1{
+    color:#6bbcff;
+    margin-bottom:18px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 13px;
+    margin-top: 10px;
+    background: #0b1424;
+    border: 1.5px solid #3b82f6;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+input[type="text"]:focus {
+    border-color: #6bbcff;
+    box-shadow: 0 0 12px #6bbcff44;
+}
+
+button{
+    width:100%;
+    padding:13px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#3b82f6;
+    color:white;
+    font-size:16px;
+    font-weight: bold;
+    cursor:pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover:not(:disabled){
+    transform: scale(1.03);
+    background: #2563eb;
+}
+
+button:disabled {
+    background: #1e293b;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+#status{
+    margin-top:15px;
+    font-weight:bold;
+    min-height: 20px;
+    transition: all 0.3s ease;
+}
+
+.error-shake {
+    animation: shakeError 0.4s ease-in-out;
+}
+
+.key-container {
+    margin-top: 10px;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.key-box {
+    color:white; 
+    font-size:15px; 
+    font-family: 'Courier New', Courier, monospace;
+    display:block; 
+    margin: 10px 0; 
+    background:#050c18; 
+    padding:12px; 
+    border-radius:8px; 
+    border: 1.5px solid #3b82f6;
+    letter-spacing: 1px;
+    user-select: all;
+    animation: pulseBorder 3s infinite ease-in-out;
+}
+
+.copy-btn {
+    background: #22c55e;
+    margin-bottom: 10px;
+}
+
+.copy-btn:hover:not(:disabled) {
+    background: #16a34a;
+}
+
+.success-animate {
+    animation: successPop 0.3s ease-in-out;
+}
+
+.discord-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #1e293b;
+}
+
+.discord-static-btn {
+    background: #5865F2;
+    cursor: default;
+}
+
+.discord-static-btn:hover {
+    transform: none;
+    background: #5865F2;
+}
+
+.discord-text {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 8px;
+    line-height: 1.4;
+    font-weight: normal;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="mainCard">
+
+<h1>Pixel Hub</h1>
+
+<input type="text" id="secretCodeInput" placeholder="Enter Secret Code Here...">
+<button id="genBtn" onclick="processCodeVerification()">Generate Key</button>
+
+<div id="status"></div>
+
+<div class="discord-section">
+    <button class="discord-static-btn">💬 Discord</button>
+    <div class="discord-text">
+        To get the a code you need to buy it from PixelOnTop in his discord server!
+    </div>
+</div>
+
+</div>
+
+<script>
+// Your specific master code configuration
+const ALLOWED_SECRET_CODES = ["PIXELMASTER_2026"];
+
+// ⚠️ PASTE YOUR LIVE CLOUDFLARE WORKER URL HERE (No trailing slash)
+const BACKEND_URL = "https://pixel-key-backend.yourname.workers.dev"; 
+const CLEAN_MAIN_URL = "https://pixelontopp.github.io/pixelhub/";
+
+window.addEventListener('DOMContentLoaded', () => {
+    const savedPermanentKey = localStorage.getItem('pixelPermanentKey');
+    if (savedPermanentKey) {
+        showPermanentKey(savedPermanentKey);
+    }
+});
+
+function processCodeVerification() {
+    const statusDiv = document.getElementById("status");
+    const codeInput = document.getElementById("secretCodeInput");
+    const cardEl = document.getElementById("mainCard");
+    const enteredValue = codeInput.value.trim();
+
+    statusDiv.classList.remove("error-shake");
+    cardEl.classList.remove("error-shake");
+
+    if (localStorage.getItem('pixelPermanentKey')) {
+        statusDiv.style.color = "#ff4a4a";
+        statusDiv.innerHTML = "You haved already generated a permanent key!";
+        cardEl.classList.add("error-shake");
+        return;
+    }
+
+    if (enteredValue === "") {
+        statusDiv.style.color = "#ff4a4a";
+        statusDiv.innerHTML = "Please enter a code first!";
+        cardEl.classList.add("error-shake");
+        return;
+    }
+
+    if (ALLOWED_SECRET_CODES.includes(enteredValue)) {
+        statusDiv.style.color = "#6bbcff";
+        statusDiv.innerHTML = "Registering key with database...";
+
+        const randomID = Math.floor(100000 + Math.random() * 900000);
+        const newPermanentKey = "PIXELKEY_PERM_" + randomID;
+
+        // Secure background communications with the database API
+        fetch(`${BACKEND_URL}/addkey`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ secretCode: enteredValue, generatedKey: newPermanentKey })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            return res.json();
+        })
+        .then(data => {
+            if(data.success) {
+                if(codeInput) codeInput.style.display = "none";
+                statusDiv.innerHTML = "";
+                localStorage.setItem('pixelPermanentKey', newPermanentKey);
+                showPermanentKey(newPermanentKey);
+            }
+        })
+        .catch(err => {
+            statusDiv.style.color = "#ff4a4a";
+            statusDiv.innerHTML = "Database communication error!";
+            cardEl.classList.add("error-shake");
+        });
+    } else {
+        statusDiv.style.color = "#ff4a4a";
+        statusDiv.innerHTML = "Code doesnt exist!";
+        cardEl.classList.add("error-shake");
+    }
+}
+
+function showPermanentKey(key) {
+    const statusDiv = document.getElementById("status");
+    const genBtn = document.getElementById("genBtn");
+    const codeInput = document.getElementById("secretCodeInput");
+    
+    if(codeInput) codeInput.style.display = "none";
+    
+    genBtn.innerHTML = "Key Active";
+    genBtn.style.background = "#1e293b"; 
+    genBtn.disabled = true;
+    
+    statusDiv.innerHTML = `
+        <div class="key-container">
+            <span class="key-box" id="keyText">${key}</span>
+            <button class="copy-btn" id="copyBtn" onclick="copyAndCleanUpURL('${key}')">📋 Copy</button>
+        </div>
+    `;
+}
+
+function copyAndCleanUpURL(key) {
+    navigator.clipboard.writeText(key).then(() => {
+        const copyBtn = document.getElementById("copyBtn");
+        copyBtn.classList.add("success-animate");
+        copyBtn.innerHTML = "✨ Copied Key!";
+        copyBtn.style.background = "#10b981"; 
+        
+        setTimeout(() => {
+            window.location.href = CLEAN_MAIN_URL;
+        }, 1200);
+    }).catch(err => {
+        window.location.href = CLEAN_MAIN_URL;
+    });
+}
+</script>
+
+</body>
+</html>
