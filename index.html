@@ -203,9 +203,7 @@ button:disabled {
 <script>
 // ==================== 🛠️ CORE CONFIGURATION ====================
 
-// ⚠️ PASTE YOUR LIVE WORKER LINK HERE ONE MORE TIME TO BE absolutely SURE
 const BACKEND_URL = "https://pixel-key-backend.helloytrbx.workers.dev"; 
-
 const ALLOWED_SECRET_CODES = ["PIXELMASTER_2014", "PIXELMASTER_1", "PIXELMASTER_5083", "GIVEAWAY_WINNER"];
 const CLEAN_MAIN_URL = "https://pixelontopp.github.io/pixelhub/";
 
@@ -248,9 +246,10 @@ function processCodeVerification() {
         const randomID = Math.floor(100000 + Math.random() * 900000);
         const newPermanentKey = "PIXELKEY_PERM_" + randomID;
 
+        // 🚀 MOBILE FIX: Changed Content-Type to text/plain to force mobile browsers to skip preflight blocks
         fetch(`${BACKEND_URL}/addkey`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({ secretCode: enteredValue, generatedKey: newPermanentKey })
         })
         .then(res => {
@@ -266,7 +265,6 @@ function processCodeVerification() {
             }
         })
         .catch(err => {
-            // This will show exactly what URL the code is executing
             statusDiv.style.color = "#ff4a4a";
             statusDiv.innerHTML = `🚨 Debug Info: ${err.message || err}<br><span style="font-size:11px;color:#94a3b8;display:block;margin-top:5px;">Targeting: ${BACKEND_URL}/addkey</span>`;
             cardEl.classList.add("error-shake");
