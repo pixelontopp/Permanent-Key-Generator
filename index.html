@@ -112,7 +112,7 @@ button:disabled {
     font-weight:bold;
     min-height: 20px;
     transition: all 0.3s ease;
-    word-break: break-all; /* Prevents long errors from cutting off on mobile screens */
+    word-break: break-all;
     font-size: 13px;
 }
 
@@ -184,7 +184,7 @@ button:disabled {
 
     <h1>Pixel Hub</h1>
 
-    <input type="text" id="secretCodeInput" placeholder="Enter Secret Code Here...">
+    <input type="text" id="secretCodeInput" placeholder="Enter Code Here...">
     <button id="genBtn" onclick="processCodeVerification()">Generate Key</button>
 
     <div id="status"></div>
@@ -203,10 +203,10 @@ button:disabled {
 <script>
 // ==================== 🛠️ CORE CONFIGURATION ====================
 
-// ⚠️ STEP 1: CHANGE THE LINK BELOW TO YOUR LIVE CLOUDFLARE WORKER LINK!
-const BACKEND_URL = "https://pixel-key-backend.hellotyrbx.workers.dev"; 
+// ⚠️ PASTE YOUR LIVE WORKER LINK HERE ONE MORE TIME TO BE absolutely SURE
+const BACKEND_URL = "https://pixel-key-backend.helloytrbx.workers.dev"; 
 
-const ALLOWED_SECRET_CODES = ["PIXELMASTER_2014", "PIXELMASTER_1", "PIXELMASTER_5083", "GIVEAWAY_WINNER",];
+const ALLOWED_SECRET_CODES = ["PIXELMASTER_2014", "PIXELMASTER_1", "PIXELMASTER_5083", "GIVEAWAY_WINNER"];
 const CLEAN_MAIN_URL = "https://pixelontopp.github.io/pixelhub/";
 
 // ===============================================================
@@ -248,17 +248,13 @@ function processCodeVerification() {
         const randomID = Math.floor(100000 + Math.random() * 900000);
         const newPermanentKey = "PIXELKEY_PERM_" + randomID;
 
-        // Dynamic Diagnostics Fetch Engine
         fetch(`${BACKEND_URL}/addkey`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ secretCode: enteredValue, generatedKey: newPermanentKey })
         })
         .then(res => {
-            if (!res.ok) {
-                // If cloudflare rejects it, grab the exact status code (e.g. 404, 403, 500)
-                throw new Error(`HTTP_${res.status}_${res.statusText}`);
-            }
+            if (!res.ok) throw new Error(`HTTP_${res.status}`);
             return res.json();
         })
         .then(data => {
@@ -267,14 +263,12 @@ function processCodeVerification() {
                 statusDiv.innerHTML = "";
                 localStorage.setItem('pixelPermanentKey', newPermanentKey);
                 showPermanentKey(newPermanentKey);
-            } else if (data.error) {
-                throw new Error(`Worker_Rejected: ${data.error}`);
             }
         })
         .catch(err => {
-            // PRINTS THE EXACT MOBILE DIAGNOSTIC TO THE USER
+            // This will show exactly what URL the code is executing
             statusDiv.style.color = "#ff4a4a";
-            statusDiv.innerHTML = `🚨 Debug Info: ${err.message || err}`;
+            statusDiv.innerHTML = `🚨 Debug Info: ${err.message || err}<br><span style="font-size:11px;color:#94a3b8;display:block;margin-top:5px;">Targeting: ${BACKEND_URL}/addkey</span>`;
             cardEl.classList.add("error-shake");
         });
     } else {
