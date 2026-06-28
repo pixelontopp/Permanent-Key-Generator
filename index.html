@@ -181,30 +181,31 @@ button:disabled {
 
 <div class="card" id="mainCard">
 
-<h1>Pixel Hub</h1>
+    <h1>Pixel Hub</h1>
 
-<input type="text" id="secretCodeInput" placeholder="Enter Secret Code Here...">
-<button id="genBtn" onclick="processCodeVerification()">Generate Key</button>
+    <input type="text" id="secretCodeInput" placeholder="Enter Secret Code Here...">
+    <button id="genBtn" onclick="processCodeVerification()">Generate Key</button>
 
-<div id="status"></div>
+    <div id="status"></div>
 
-<div class="discord-section">
-    <button class="discord-static-btn">💬 Discord</button>
-    <div class="discord-text">
-        To get the a code you need to buy it from PixelOnTop in his discord server!
+    <div class="discord-section">
+        <button class="discord-static-btn">💬 Discord</button>
+        <div class="discord-text">
+            To get a code you need to buy it from PixelOnTop in his discord server!
+        </div>
     </div>
-</div>
 
 </div>
 
 <script>
-// Your specific master code configuration
+// Master configuration values
 const ALLOWED_SECRET_CODES = ["PIXELMASTER_2026"];
 
-// ⚠️ PASTE YOUR LIVE CLOUDFLARE WORKER URL HERE (No trailing slash)
+// ⚠️ PASTE YOUR ACTUAL LIVE CLOUDFLARE WORKER ROUTE LINK HERE
 const BACKEND_URL = "https://pixel-key-backend.yourname.workers.dev"; 
 const CLEAN_MAIN_URL = "https://pixelontopp.github.io/pixelhub/";
 
+// Automatically check if user already generated an identity key on load
 window.addEventListener('DOMContentLoaded', () => {
     const savedPermanentKey = localStorage.getItem('pixelPermanentKey');
     if (savedPermanentKey) {
@@ -218,12 +219,13 @@ function processCodeVerification() {
     const cardEl = document.getElementById("mainCard");
     const enteredValue = codeInput.value.trim();
 
+    // Reset animations
     statusDiv.classList.remove("error-shake");
     cardEl.classList.remove("error-shake");
 
     if (localStorage.getItem('pixelPermanentKey')) {
         statusDiv.style.color = "#ff4a4a";
-        statusDiv.innerHTML = "You haved already generated a permanent key!";
+        statusDiv.innerHTML = "You have already generated a permanent key!";
         cardEl.classList.add("error-shake");
         return;
     }
@@ -242,7 +244,7 @@ function processCodeVerification() {
         const randomID = Math.floor(100000 + Math.random() * 900000);
         const newPermanentKey = "PIXELKEY_PERM_" + randomID;
 
-        // Secure background communications with the database API
+        // Push key directly into your Cloudflare Worker database
         fetch(`${BACKEND_URL}/addkey`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
