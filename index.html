@@ -198,14 +198,17 @@ button:disabled {
 </div>
 
 <script>
-// Master configuration values
-const ALLOWED_SECRET_CODES = ["PIXELMASTER_2026"];
+// ==================== 🛠️ CORE CONFIGURATION ====================
 
-// ⚠️ PASTE YOUR ACTUAL LIVE CLOUDFLARE WORKER ROUTE LINK HERE
+// ⚠️ CHANGE THIS LINK BELOW TO YOUR LIVE CLOUDFLARE WORKER LINK!
 const BACKEND_URL = "https://pixel-key-backend.yourname.workers.dev"; 
+
+const ALLOWED_SECRET_CODES = ["PIXELMASTER_2026"];
 const CLEAN_MAIN_URL = "https://pixelontopp.github.io/pixelhub/";
 
-// Automatically check if user already generated an identity key on load
+// ===============================================================
+
+// Check if user already has an active key saved locally
 window.addEventListener('DOMContentLoaded', () => {
     const savedPermanentKey = localStorage.getItem('pixelPermanentKey');
     if (savedPermanentKey) {
@@ -219,7 +222,6 @@ function processCodeVerification() {
     const cardEl = document.getElementById("mainCard");
     const enteredValue = codeInput.value.trim();
 
-    // Reset animations
     statusDiv.classList.remove("error-shake");
     cardEl.classList.remove("error-shake");
 
@@ -244,7 +246,7 @@ function processCodeVerification() {
         const randomID = Math.floor(100000 + Math.random() * 900000);
         const newPermanentKey = "PIXELKEY_PERM_" + randomID;
 
-        // Push key directly into your Cloudflare Worker database
+        // Uses the BACKEND_URL configured above to send the network data
         fetch(`${BACKEND_URL}/addkey`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
